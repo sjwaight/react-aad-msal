@@ -96,7 +96,7 @@ class SampleAppRedirectOnLaunch extends React.Component {
           provider={new MsalAuthProviderFactory({
             authority: process.env.REACT_APP_AUTHORITY,
             clientID: process.env.REACT_APP_AAD_APP_CLIENT_ID,
-            scopes: ["openid"],
+            scopes: ["openid", "offline_access", "https://graph.microsoft.com/mail.read"],
             type: LoginType.Redirect,
             persistLoginPastSession: true,
           })}

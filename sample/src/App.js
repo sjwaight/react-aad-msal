@@ -24,6 +24,7 @@
 //
 
 import React, { Component } from 'react';
+import axios from 'axios';
 import './App.css';
 import SampleAppButtonLaunch from './SampleAppButtonLaunch';
 import SampleAppRedirectOnLaunch from './SampleAppRedirectOnLaunch';
@@ -34,6 +35,7 @@ class App extends Component {
     super(props);
 
     this.state = {
+      me: null,
       userInfo: null,
       sampleType: null
     };
@@ -54,9 +56,21 @@ class App extends Component {
     localStorage.setItem('sampleType', sampleType);
   }
 
+  callGraphApi = () => {
+
+    axios.get(
+      'https://graph.microsoft.com/v1.0/me?$select=displayName,mail,userPrincipalName,mobilePhone',
+      { headers: {"Authorization": `Bearer ${this.state.userInfo.jwtAccessToken.toString()}` }}
+    ).then(res => {
+      const me = res.data;
+      this.setState({ me });
+    });
+  }
+
   render() {
     let sampleBox;
     let sampleButtons;
+    let myInfo;
 
     if (this.state.sampleType === "popup") {
 
@@ -91,6 +105,29 @@ class App extends Component {
         </div>
     }
 
+    if (this.state.me) {
+      myInfo = <div>
+                  <hr/>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                          <td>{this.state.me.displayName}</td>
+                          <td>{this.state.me.mail}</td>
+                          <td>{this.state.me.mobilePhone}</td>
+                        </tr>
+                    </tbody>
+                  </table>
+                </div>
+       }      
+
+
     return (
       <div className="App">
         <header className="App-header">
@@ -106,8 +143,20 @@ class App extends Component {
             {this.state.userInfo && <div style={{ wordWrap: "break-word" }}>
               <span style={{ fontWeight: "bold" }}>User Information:</span> <br />
               <span style={{ fontWeight: "bold" }}>ID Token:</span> {this.state.userInfo.jwtIdToken} <br />
-              <span style={{ fontWeight: "bold" }}>Access Token:</span> {this.state.userInfo.jwtAccessToken} <br />
-              <span style={{ fontWeight: "bold" }}>Username:</span> {this.state.userInfo.user.name}</div>}
+              <span style={{ fontWeight: "bold" }}>Access Token:</span> {this.state.userInfo.jwtAccessToken} 
+              
+              <hr />
+
+              <span style={{ fontWeight: "bold" }}>Username:</span> {this.state.userInfo.user.name}
+            
+              <hr/>
+              <button onClick={() => this.callGraphApi()} className="Button">Call MS Graph API</button>
+
+              </div>              
+            }
+
+            {myInfo}
+
           </div>
         </div>
       </div>
